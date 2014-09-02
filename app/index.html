@@ -1,0 +1,86 @@
+<html>
+  <head>
+    <title>My first Three.js app</title>
+    <style>canvas { width: 100%; height: 100% }</style>
+  </head>
+  <body>
+    <script src="../js/three.min.js"></script>
+    <script>
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000);
+      var renderer = new THREE.WebGLRenderer({antialias: true});
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      //3D cube code.
+      var geometry = new THREE.CubeGeometry(50,50,50);
+      var material = new THREE.MeshLambertMaterial({ color: 0x0000ff });
+      var cube = new THREE.Mesh(geometry, material);
+      scene.add(cube);
+      camera.position.z = -400;
+      camera.position.x = 200;
+      camera.position.y = 350;
+
+      renderer.render(scene, camera);
+
+      var light = new THREE.SpotLight();
+      light.position.set(170, 330, -160);
+      scene.add(light);
+
+      var litCube = new THREE.Mesh(
+        new THREE.CubeGeometry(50, 50, 50),
+        new THREE.MeshLambertMaterial({ color: 0x00ff00 }));
+
+      litCube.position.y = 50;
+      scene.add(litCube);
+
+      renderer.shadowMapEnabled = true;
+
+      light.castShadow = true;
+
+      litCube.castShadow = true;
+      litCube.receiveShadow = true;
+
+      cube.castShadow = true;
+      cube.receiveShadow = true;
+      
+
+      var planeGeo = new THREE.PlaneGeometry(400, 200, 10, 10);
+      var planeMat = new THREE.MeshLambertMaterial({color: 0xffffff});
+      var plane = new THREE.Mesh(planeGeo, planeMat);
+
+      plane.rotation.x = -Math.PI / 2;
+      plane.position.y = -25;
+      plane.receiveShadow = true;
+      scene.add(plane);
+
+      
+      function render() {
+        requestAnimationFrame(render);
+        //cube.rotation.x += 0.1;
+        //cube.rotation.y += 0.1;
+        renderer.render(scene, camera);
+      }
+      //render();
+
+
+      function animate(t) {
+        /*camera.position.x = Math.sin(t / 1000) * 300;
+        camera.position.y = 150;
+        camera.position.z = Math.cos(t / 1000) * 300;
+        */
+        
+        litCube.position.x = Math.cos(t/600) * 85;
+        litCube.position.y = 60 - Math.sin(t/900) * 25;
+        litCube.position.z = Math.sin(t/600) * 85;
+        litCube.rotation.x = t / 500;
+        litCube.rotation.y = t / 800;
+        camera.lookAt(scene.position);
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate, renderer.domElement);
+      };
+
+      animate(new Date().getTime());
+    </script>
+  </body>
+</html>

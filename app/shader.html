@@ -1,0 +1,85 @@
+<html>
+  <head>
+    <title>My first Three.js app</title>
+    <style>canvas { width: 100%; height: 100% }</style>
+  </head>
+  <body>
+    <script src="../js/three.min.js"></script>
+    <script id="vertex" type="text/x-glsl-vert">
+      varying float vZ;
+      uniform float time;
+      void main() {
+        vec4 mvPosition = modelViewMatrix * vec4( position, 1.0);
+        mvPosition.y += 20.0 * sin(time * 0.5 + mvPosition.x / 25.0);
+        mvPosition.x += 30.0 * cos(time * 0.5 + mvPosition.y / 25.0);
+        vec4 p = projectionMatrix * mvPosition;
+        vZ = p.z;
+        gl_Position = p;
+      }
+    </script>
+    <script id="fragment" type="text/x-glsl-frag">
+      varying float vZ;
+      uniform float time;
+      uniform vec2 size;
+
+      void main() {
+        vec2 d = gl_FragCoord.xy - (0.5 + 0.02 * sin(time)) * size;
+        float a = sin(time * 0.3) * 2.0 * 3.14159;
+        d = vec2(d.x * cos(a) + d.y * sin(a),
+                 -d.x * sin(a) + d.y * cos(a));
+        vec2 rg = vec2(1.0) - abs(d) / (0.5 * size);
+        float b = abs(vZ) / 160.0;
+        gl_FragColor = vec4(rg, b, 1.0);
+      }
+    </script>
+    <script>
+      var renderer = new THREE.WebGLRenderer({antialias: true});
+      renderer.setSize(document.body.clientWidth, document.body.clientHeight);
+
+      document.body.appendChild(renderer.domElement);
+      renderer.setClearColor(0xEEEEEE, 1.0);
+      renderer.clear();
+
+      var fov = 45;
+      var width = renderer.domElement.width;
+      var height = renderer.domElement.height;
+      var aspect = width / height;
+      var near = 1;
+      var far = 10000;
+      var camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+      camera.position.z = 160;
+      camera.position.y = 40;
+      camera.position.x = 40;
+
+      var scene = new THREE.Scene();
+
+      var uniforms = {
+        time: { type: 'f', value: 1.0 },
+        size: { type: 'v2', value: new THREE.Vector2(width, height) }
+      };
+
+      var cube = new THREE.Mesh(
+        new THREE.BoxGeometry(50, 50, 50, 20, 20, 20),
+        new THREE.ShaderMaterial({
+          uniforms: uniforms,
+          vertexShader: document.getElementById('vertex').textContent,
+          fragmentShader: document.getElementById('fragment').textContent
+        }));
+      scene.add(cube);
+      renderer.render(scene, camera);
+
+      function animate(t) {
+        last = t;
+        uniforms.time.value += 0.05;
+        cube.rotation.y += 0.01;
+        cube.rotation.z += 0.02;
+        renderer.clear();
+        camera.lookAt(scene.position);
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate, renderer.domElement);
+        };
+        animate(new Date().getTime());
+
+    </script>
+  </body>
+</html>
