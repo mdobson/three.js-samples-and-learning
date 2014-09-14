@@ -1,9 +1,15 @@
 var gulp = require('gulp'),
-    livereload = require('gulp-livereload');
+    connect = require('gulp-webserver');
 
-gulp.task('watch', function() {
-  livereload.listen();
-  gulp.watch(['app/**']).on('change', livereload.changed);
+
+gulp.task('webserver', function() {
+  gulp
+    .src('.')
+    .pipe(connect({
+      livereload: true,
+      directoryListeing: true,
+      open: true
+    }));
 });
 
-gulp.task('default', ['watch']);
+gulp.task('default', ['webserver']);
