@@ -34,6 +34,7 @@
 
         renderer = new THREE.WebGLRenderer({antialias: true});
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColorHex(0xffffff, 1);
         document.body.appendChild(renderer.domElement);
 
 
@@ -45,12 +46,14 @@
         var dirtTexture = new THREE.ImageUtils.loadTexture('../img/dirt.png');
         var grassTexture = new THREE.ImageUtils.loadTexture('../img/grass.png');
         var brickTexture = new THREE.ImageUtils.loadTexture('../img/brick.png');
+        var cobbleStoneTexture = new THREE.ImageUtils.loadTexture('../img/cobblestone.png');
 
         //Setup our materials
-        var blueMaterial = new THREE.MeshLambertMaterial({ map: dirtTexture });
-        var greenMaterial = new THREE.MeshLambertMaterial({ map: grassTexture });
-        var redMaterial = new THREE.MeshLambertMaterial({ map: brickTexture });
-        var materials = [blueMaterial, greenMaterial, redMaterial];
+        var dirtMaterial = new THREE.MeshLambertMaterial({ map: dirtTexture });
+        var grassMaterial = new THREE.MeshLambertMaterial({ map: grassTexture });
+        var brickMaterial = new THREE.MeshLambertMaterial({ map: brickTexture });
+        var cobbleStoneMaterial = new THREE.MeshLambertMaterial({ map: cobbleStoneTexture });
+        var materials = [dirtMaterial, grassMaterial, brickMaterial, cobbleStoneMaterial];
 
 
         var rows = 4;
@@ -61,7 +64,7 @@
           for(i = 0; i < rows; i++) {
             var tmpCube = null;
             for(j = 0; j < cubes; j++) {
-              var mat = materials[ j % 3];
+              var mat = cobbleStoneMaterial;
               var cube = new THREE.Mesh(geometry, mat);
               cube.castShadow = true;
               cube.receiveShadow = true;
@@ -87,8 +90,6 @@
         light.position.set(170, 330, -160);
         scene.add(light);
 
-
-
         renderer.shadowMapEnabled = true;
         light.castShadow = true;
         
@@ -97,7 +98,7 @@
         var plane = new THREE.Mesh(planeGeo, planeMat);
 
         plane.rotation.x = -Math.PI / 2;
-        plane.position.y = -25;
+        plane.position.y = -5;
         plane.receiveShadow = true;
         scene.add(plane);
 
