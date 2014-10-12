@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+  <head>
+    <script src='../js/three.min.js'></script>
+    
+
+  </head>
+  <body>
+    <script>
+      var scene, renderer, camera, lastTimeMsec;
+      
+      function init() {
+        var renderFx = [];
+        scene = new THREE.Scene();
+        renderer = new THREE.WebGLRenderer();
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 1000);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        camera.position.z = 1.5;
+        var geometry = new THREE.SphereGeometry(0.5, 32, 32);
+        //var material = new THREE.MeshBasicMaterial({color: 0xffffff});
+        var material = new THREE.MeshPhongMaterial();
+        material.map = THREE.ImageUtils.loadTexture('../img/earthmap1k.jpg');
+        material.bumpMap = THREE.ImageUtils.loadTexture('../img/earthbump1k.jpg');
+        material.bumpScale = 0.05;
+        material.specularMap = THREE.ImageUtils.loadTexture('../img/earthspec1k.jpg');
+        material.specular = new THREE.Color('grey');
+        var light = new THREE.AmbientLight( 0x888888 );
+        scene.add(light);
+
+
+        light = new THREE.DirectionalLight(0xcccccc, 1);
+        light.position.set(5, 3, 5);
+        scene.add(light);
+        var earthMesh = new THREE.Mesh(geometry, material);
+        renderFx.push(function(delta, now) {
+          earthMesh.rotateY( 1 / 32 * delta);
+        });
+        var cloudMesh = createCloudLayer();
+        renderFx.push(function(delta, now) {
+          cloudMesh.rotateY( 1 / 16 * delta);
+        });
+        earthMesh.add(cloudMesh);
+        scene.add(earthMesh);
+
+        renderFx.push(function() {
+          renderer.render(scene, camera);
+        });
+
+        var geometry = new THREE.SphereGeometry(90, 32, 32);
+        var material = new THREE.MeshBasicMaterial();
+        material.map = THREE.ImageUtils.loadTexture('../img/galaxy_starfield.png');
+        material.side = THREE.BackSide;
+
+        var mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+
+        requestAnimationFrame(function animate(nowMsec) {
+          requestAnimationFrame(animate);
+
+          lastTimeMsec = lastTimeMsec || nowMsec - 1000 / 60;
+          var deltaMsec = Math.min(200, nowMsec - lastTimeMsec);
+          lastTimeMsec = nowMsec;
+          renderFx.forEach(function(f) {
+            f(deltaMsec / 1000, nowMsec / 1000);
+          });
+        });
+      }
+      function render() {
+        requestAnimationFrame(render);
+        camera.lookAt(scene.position);
+        renderer.render(scene, camera);
+      }
+
+
+      function createCloudLayer() {
+        var canvasResult = document.createElement('canvas');
+        canvasResult.width = 1024;
+        canvasResult.height = 512;
+        var contextResult = canvasResult.getContext('2d');
+
+        var imageMap = new Image();
+        imageMap.addEventListener('load', function() {
+          var canvasMap = document.createElement('canvas');
+          canvasMap.width = imageMap.width;
+          canvasMap.height = imageMap.height;
+          var contextMap = canvasMap.getContext('2d');
+          contextMap.drawImage(imageMap, 0, 0);
+          var dataMap = contextMap.getImageData(0, 0, canvasMap.width, canvasMap.height);
+
+          var imageTrans = new Image();
+          imageTrans.addEventListener('load', function() {
+            var canvasTrans = document.createElement('canvas');
+            canvasTrans.width = imageTrans.width;
+            canvasTrans.height = imageTrans.height;
+            var contextTrans = canvasTrans.getContext('2d');
+            contextTrans.drawImage(imageTrans, 0, 0);
+            var dataTrans = contextTrans.getImageData(0, 0, canvasTrans.width, canvasTrans.height);
+            var dataResult = contextMap.createImageData(canvasMap.width, canvasMap.height);
+
+            for (var y = 0, offset = 0; y < imageMap.height; y++) {
+              for(var x = 0; x < imageMap.width; x++, offset += 4) {
+                dataResult.data[offset + 0] = dataMap.data[offset + 0];
+                dataResult.data[offset + 1] = dataMap.data[offset + 1];
+                dataResult.data[offset + 2] = dataMap.data[offset + 2];
+                dataResult.data[offset + 3] = 255 - dataTrans.data[offset + 0];
+              }
+            }
+
+            contextResult.putImageData(dataResult, 0, 0);
+            material.map.needsUpdate = true;
+            
+          });
+          imageTrans.src = '../img/earthcloudmaptrans.jpg';
+        }, false);
+        imageMap.src = '../img/earthcloudmap.jpg';
+
+        var geometry = new THREE.SphereGeometry(0.51, 32, 32);
+        var material = new THREE.MeshPhongMaterial({
+          map: new THREE.Texture(canvasResult),
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.8
+        });
+
+        var mesh = new THREE.Mesh(geometry, material);
+        return mesh;
+      }
+      init();
+    </script>
+  </body>
+  
+</html>
