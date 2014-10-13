@@ -81,8 +81,8 @@
         for(var i = 0; i < 5; i++) {
           for(var j = 0; j < 5; j ++) {
             var size = 10;
-            var vec = new THREE.Vector3(size * j, 0, size * i);
-            var vox = new Voxel({ vector: vec });
+            var vec = new THREE.Vector3(size * j , 0, size * i );
+            var vox = new Voxel({ vector:vec });
             scene.add(vox.mesh);
           }
         }
@@ -94,7 +94,7 @@
           for(var i = 0; i < squareSize; i++) {
             for(var j = 0; j < squareSize; j ++) {
               var size = 10;
-              var vec = new THREE.Vector3(size * j, size * l, size * i);
+              var vec = new THREE.Vector3(size * j + (size * l), size * l, size * i + (size * l));
               var vox = new Voxel({ vector: vec });
               scene.add(vox.mesh);
             }
