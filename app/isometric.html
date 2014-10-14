@@ -25,77 +25,19 @@
         light.position.set(0, 50, 50);
         scene.add(light);
 
-        pyramid();
-
-
-
-
+        addFloor();
+        pyramid(-2, -2, 3, 15);
      }
 
-      function addAccessHelper() {
-        scene.add(new THREE.AxisHelper(40));
-      }
-
-      function initControls() {
-        controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.addEventListener('change', render);
-        controls.noZoom = true;
-        controls.noPan = true;
-        controls.maxPolarAngle = Math.PI / 2;
 
 
-      
-      }
-
-      function initCamera() {
-        var aspect = window.innerWidth / window.innerHeight;
-        var d = 40;
-        camera = new THREE.OrthographicCamera( - d * aspect, d * aspect, d, -d, 1, 1000);
-
-        camera.position.set(50, 50, 50);
-        camera.rotation.order = 'YXZ';
-        camera.rotation.y = - Math.PI / 4;
-        camera.rotation.x = Math.atan( - 1 / Math.sqrt(2));
-
-
-      }
-      function addFloor() {
-        var geometry = new THREE.PlaneGeometry(100, 100, 10, 10);
-
-        var material = new THREE.MeshBasicMaterial({ opacity: 0.5, transparent: true });
-        var grid = new THREE.Mesh(geometry, material);
-        grid.rotation.order = 'YXZ';
-        grid.rotation.x = - Math.PI / 2;
-        grid.rotation.y = - Math.PI / 2;
-        scene.add(grid);
-      }
-
-
-      //Expect vector in [x, y, z] format
-      function addVoxel() {
-        var voxel = new Voxel();
-        scene.add(voxel.mesh);
-      }
-
-      function flatSquare() {
-        for(var i = 0; i < 5; i++) {
-          for(var j = 0; j < 5; j ++) {
-            var size = 10;
-            var vec = new THREE.Vector3(size * j , 0, size * i );
-            var vox = new Voxel({ vector:vec });
-            scene.add(vox.mesh);
-          }
-        }
-      }
-
-      function pyramid() {
-        var squareSize = 5;
-        for(var l = 0; l < 3; l++) {
-          for(var i = 0; i < squareSize; i++) {
-            for(var j = 0; j < squareSize; j ++) {
-              var size = 10;
+      function pyramid(x, y, size, squareSize) {
+        var levels = (squareSize - 1) / 2;
+        for(var l = 0; l < levels; l++) {
+          for(var i = y; i < squareSize + y; i++) {
+            for(var j = x; j < squareSize + x; j ++) {
               var vec = new THREE.Vector3(size * j + (size * l), size * l, size * i + (size * l));
-              var vox = new Voxel({ vector: vec });
+              var vox = new Voxel({ vector: vec, size: size });
               scene.add(vox.mesh);
             }
           }
@@ -111,7 +53,8 @@
       function Voxel(opts) {
         opts = opts || {};
         var defaultMaterial = new THREE.MeshNormalMaterial({wireframe: opts.wireframe});
-        var defaultGeometry = new THREE.BoxGeometry(10, 10, 10);
+        var size = opts.size || 10;
+        var defaultGeometry = new THREE.BoxGeometry(size, size, size);
         var defaultVector = new THREE.Vector3();
 
         var material = opts.material || defaultMaterial;
@@ -120,6 +63,41 @@
         this.mesh.position.x = opts.vector.x || defaultVector.x;
         this.mesh.position.y = opts.vector.y || defaultVector.y;
         this.mesh.position.z = opts.vector.z || defaultVector.z;
+      }
+
+      function addAccessHelper() {
+        scene.add(new THREE.AxisHelper(40));
+      }
+
+      function initControls() {
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.addEventListener('change', render);
+        controls.noZoom = true;
+        controls.noPan = true;
+        controls.maxPolarAngle = Math.PI / 2;
+      }
+
+      function initCamera() {
+        var aspect = window.innerWidth / window.innerHeight;
+        var d = 40;
+        camera = new THREE.OrthographicCamera( - d * aspect, d * aspect, d, -d, 1, 1000);
+
+        camera.position.set(50, 50, 50);
+        camera.rotation.order = 'YXZ';
+        camera.rotation.y = - Math.PI / 4;
+        camera.rotation.x = Math.atan( - 1 / Math.sqrt(2));
+      }
+
+      function addFloor() {
+        var geometry = new THREE.PlaneGeometry(100, 100, 10, 10);
+
+        var material = new THREE.MeshBasicMaterial({ opacity: 0.5, transparent: true });
+        var grid = new THREE.Mesh(geometry, material);
+        grid.rotation.order = 'YXZ';
+        grid.rotation.x = - Math.PI / 2;
+        grid.rotation.y = - Math.PI / 2;
+        grid.position.y = -3;
+        scene.add(grid);
       }
 
 
