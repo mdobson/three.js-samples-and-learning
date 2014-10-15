@@ -26,7 +26,8 @@
         scene.add(light);
 
         addFloor();
-        pyramid(-2, -2, 3, 15);
+        //createGround();
+        //pyramid(0, 0, 2, 15);
      }
 
 
@@ -45,6 +46,16 @@
         }
       }
 
+      //Ground of voxels. Sits about the flat layer.
+      function createGround(){
+        for(var i = -50; i < 50; i+=2 ) {
+          for(var j = -50; j < 50; j += 2) {
+            var vec = new THREE.Vector3(j, 0, i);
+            var vox = new Voxel({vector: vec, size: 2});
+            scene.add(vox.mesh);
+          }
+        }
+      }
 
       function render() {
         renderer.render(scene, camera);
