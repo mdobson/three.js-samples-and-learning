@@ -8,6 +8,18 @@
     <script src="../js/orbit.js"></script>
     <script>
       var mesh, renderer, scene, camera, controls;
+      var dirtTexture = new THREE.ImageUtils.loadTexture('../img/dirt.png');
+      var grassTexture = new THREE.ImageUtils.loadTexture('../img/grass.png');
+      var brickTexture = new THREE.ImageUtils.loadTexture('../img/brick.png');
+      var cobbleStoneTexture = new THREE.ImageUtils.loadTexture('../img/cobblestone.png');
+
+      //Setup our materials
+      var dirtMaterial = new THREE.MeshLambertMaterial({ map: dirtTexture });
+      var grassMaterial = new THREE.MeshLambertMaterial({ map: grassTexture });
+      var brickMaterial = new THREE.MeshLambertMaterial({ map: brickTexture });
+      var cobbleStoneMaterial = new THREE.MeshLambertMaterial({ map: cobbleStoneTexture });
+      var materials = [dirtMaterial, grassMaterial, brickMaterial, cobbleStoneMaterial];
+
 
       init();
       render();
@@ -17,29 +29,38 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         scene = new THREE.Scene();
         document.body.appendChild(renderer.domElement);
-        scene.add( new THREE.AmbientLight(0x444444));
 
         initCamera();
         initControls();
-        var light = new THREE.PointLight(0xffffff, 0.8);
-        light.position.set(0, 50, 50);
-        scene.add(light);
+        scene.add(new THREE.AmbientLight(0xffffff));
 
-        addFloor();
+
+        var vox = new THREE.BoxGeometry(2, 2, 2);
+        var mat = new THREE.MeshNormalMaterial();
+        var mesh = new THREE.Mesh(vox, grassMaterial);
+        scene.add(mesh);
+
         //createGround();
-        //pyramid(0, 0, 2, 15);
+//        addFloor();
+//        pyramid(0, 0, 2, 15);
      }
 
 
 
       function pyramid(x, y, size, squareSize) {
         var levels = (squareSize - 1) / 2;
+        var vox = new THREE.BoxGeometry(2, 2, 2);
         for(var l = 0; l < levels; l++) {
           for(var i = y; i < squareSize + y; i++) {
             for(var j = x; j < squareSize + x; j ++) {
-              var vec = new THREE.Vector3(size * j + (size * l), size * l, size * i + (size * l));
-              var vox = new Voxel({ vector: vec, size: size });
-              scene.add(vox.mesh);
+              var x = size * j + (size * l);
+              var y = size * i + (size * l);
+              var z = size * l;
+              var mesh = new THREE.Mesh(vox, grassMaterial);
+              mesh.position.x = x;
+              mesh.position.y = y;
+              mesh.position.z = z;
+              scene.add(mesh);
             }
           }
           squareSize -= 2;
@@ -48,32 +69,23 @@
 
       //Ground of voxels. Sits about the flat layer.
       function createGround(){
+        
+        var vox = new THREE.BoxGeometry(2, 2, 2);
         for(var i = -50; i < 50; i+=2 ) {
           for(var j = -50; j < 50; j += 2) {
-            var vec = new THREE.Vector3(j, 0, i);
-            var vox = new Voxel({vector: vec, size: 2});
-            scene.add(vox.mesh);
+
+            var mesh = new THREE.Mesh(vox, grassMaterial);
+            mesh.position.x = i;
+            mesh.position.z = j;
+            mesh.position.y = -5;
+            scene.add(mesh);
           }
         }
       }
 
       function render() {
+        requestAnimationFrame(render);
         renderer.render(scene, camera);
-      }
-
-      function Voxel(opts) {
-        opts = opts || {};
-        var defaultMaterial = new THREE.MeshNormalMaterial({wireframe: opts.wireframe});
-        var size = opts.size || 10;
-        var defaultGeometry = new THREE.BoxGeometry(size, size, size);
-        var defaultVector = new THREE.Vector3();
-
-        var material = opts.material || defaultMaterial;
-        var geometry = opts.geometry || defaultGeometry;
-        this.mesh = new THREE.Mesh(geometry, material);
-        this.mesh.position.x = opts.vector.x || defaultVector.x;
-        this.mesh.position.y = opts.vector.y || defaultVector.y;
-        this.mesh.position.z = opts.vector.z || defaultVector.z;
       }
 
       function addAccessHelper() {
